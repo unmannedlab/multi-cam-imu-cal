@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>xcalibrate</name>
+  <version>0.1.0</version>
+  <description>The xcalibrate package</description>
+  <maintainer email="JacobHartzer@gmail.com">Jacob Hartzer</maintainer>
+  <author email="JacobHartzer@gmail.com">Jacob Hartzer</author>
+  <license>GPLv3</license>
+  <!-- <url type="website">http://wiki.ros.org/xcalibrate</url> -->
+
+  <depend>roscpp</depend>
+  <depend>cmake_modules</depend>
+  <depend>sensor_msgs</depend>
+  <depend>geometry_msgs</depend>
+
+  <!-- <build_depend>message_generation</build_depend> -->
+  <!-- <build_export_depend>message_generation</build_export_depend> -->
+  <buildtool_depend>catkin</buildtool_depend>
+  <!-- <exec_depend>message_runtime</exec_depend> -->
+  <!-- <test_depend>gtest</test_depend> -->
+  <!-- <doc_depend>doxygen</doc_depend> -->
+
+  <export></export>
+</package>

@@ -1,0 +1,25 @@
+
+<launch>
+
+    <!-- Start xCalibrate Node -->
+    <node name="xcalibrate_node" pkg="xcalibrate" type="xcalibrate_node" respawn="false" output="screen">
+        <rosparam command="load" file="$(find xcalibrate)/params/calibrate.yaml"/>
+        <rosparam command="load" file="$(find xcalibrate)/params/target.yaml"/>
+    </node>
+    
+    <!-- Start Vizualization Node -->
+    <node name="viz_node" pkg="xcalibrate" type="viz_node" output="screen">
+        <rosparam command="load" file="$(find xcalibrate)/params/target.yaml"/>
+        <param name="camera_stl" type="string" value="file://$(find xcalibrate)/resources/camera.stl"/>
+        <param name="imu_stl"    type="string" value="file://$(find xcalibrate)/resources/imu.stl"/>
+        <param name="lidar_stl"  type="string" value="file://$(find xcalibrate)/resources/lidar.stl"/>
+        <param name="target_stl" type="string" value="file://$(find xcalibrate)/resources/target.stl"/>
+    </node>
+
+    <!-- Start RViz -->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find xcalibrate)/rviz/default.rviz" />
+
+    <!-- Play Bag File -->
+    <node pkg="rosbag" type="play" name="player" args="-r 1.0 $(find xcalibrate)/../../data/cam_imu/calib7.bag"/>
+
+</launch> 

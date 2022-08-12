@@ -1,0 +1,31 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name":"Python: Current File",
+            "type":"python",
+            "request":"launch",
+            "program":"${file}",
+            "console":"integratedTerminal"
+        },
+        {
+            "name": "ROS: Build & Launch",
+            "type": "ros",
+            "request": "launch",
+            "target": "${workspaceFolder}/launch/calibrate.launch",
+            "preLaunchTask": "make_debug",
+        },
+        {
+            "name": "ROS: Launch",
+            "type": "ros",
+            "request": "launch",
+            "target": "${workspaceFolder}/launch/calibrate.launch",
+        },
+        {
+            "name": "ROS: Blackfly Launch",
+            "type": "ros",
+            "request": "launch",
+            "target": "${workspaceFolder}/launch/blackfly.launch",
+        }
+    ]
+}

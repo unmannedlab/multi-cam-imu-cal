@@ -1,0 +1,9 @@
+# Files Types
+*.bag
+*.asv
+
+# Directories
+build/
+data/
+matlab/
+rviz/

@@ -1,0 +1,24 @@
+# @todo: Need to update vectornav frame name
+imuExtrinsicList:
+    - "vectornav"
+
+camExtrinsicList:
+    - "blackfly"
+
+vectornav:
+    topic: "/vectornav/IMU"
+    posInit: [0.0, 0.0, 0.0]
+    quatInit: [-1.0, 0.0, 0.0, 0.0]
+    biasInit: [0.0, 0.0, 0.6463]
+
+blackfly:
+    topic: "/camera_array/BFY_camera/image_raw"
+    calFile: "blackfly.yaml"
+    posInit: [0.0, 0.25, 0.0]
+    quatInit: [0.5, 0.5, 0.5, 0.5]
+
+ace_074:
+    topic: "/pylon_camera_node/image_raw"
+    calFile: "ace_074.yaml"
+    posInit: [0.0, -0.25, 0.0]
+    quatInit: [0.5, 0.5, 0.5, 0.5]
