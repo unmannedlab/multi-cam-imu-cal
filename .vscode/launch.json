@@ -2,11 +2,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name":"Python: Current File",
-            "type":"python",
-            "request":"launch",
-            "program":"${file}",
-            "console":"integratedTerminal"
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
         },
         {
             "name": "ROS: Build & Launch",
@@ -26,6 +26,14 @@
             "type": "ros",
             "request": "launch",
             "target": "${workspaceFolder}/launch/blackfly.launch",
+        },
+        {
+            "name": "Run Sim",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/multi_imu/sim.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
         }
     ]
 }

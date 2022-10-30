@@ -107,4 +107,14 @@
         "velodyne",
         "xcalibrate"
     ],
+    "files.exclude": {
+        "**/__pycache__": true
+    },
+    "[python]": {
+        "editor.rulers": [
+            80
+        ],
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "ms-python.python",
+    },
 }
