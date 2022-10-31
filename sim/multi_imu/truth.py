@@ -5,7 +5,13 @@ from scipy.spatial.transform import Rotation
 
 
 class TruthModel:
-    def __init__(self, x_rate, y_rate, z_rate, alpha_rate, beta_rate, gamma_rate):
+    def __init__(self,
+                 x_rate,
+                 y_rate,
+                 z_rate,
+                 alpha_rate,
+                 beta_rate,
+                 gamma_rate):
         self.x_rate = x_rate
         self.y_rate = y_rate
         self.z_rate = z_rate

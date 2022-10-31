@@ -9,17 +9,17 @@ from multi_imu.truth import TruthModel
 class IMU:
     def __init__(self, id: int, truth_model: TruthModel):
         self.truth_model = truth_model
-        self.acc_sigma  = np.ones([1, 3])
-        self.omg_sigma  = np.ones([1, 3])
+        self.acc_sigma = np.ones([1, 3])
+        self.omg_sigma = np.ones([1, 3])
         self.pos_offset = np.zeros([1, 3])
         self.ang_offset = np.zeros([1, 3])
-        self.acc_bias   = np.zeros([1, 3])
-        self.omg_bias   = np.zeros([1, 3])
+        self.acc_bias = np.zeros([1, 3])
+        self.omg_bias = np.zeros([1, 3])
 
         self.pos_offset_hist = [(0, np.zeros([1, 3]))]
         self.ang_offset_hist = [(0, np.zeros([1, 3]))]
-        self.acc_bias_hist   = [(0, np.zeros([1, 3]))]
-        self.omg_bias_hist   = [(0, np.zeros([1, 3]))]
+        self.acc_bias_hist = [(0, np.zeros([1, 3]))]
+        self.omg_bias_hist = [(0, np.zeros([1, 3]))]
 
         self.id = id
 
@@ -29,7 +29,7 @@ class IMU:
     def set_hz(self, hz):
         self.hz = hz
         self.period = 1 / hz
-    
+
     def get_hz(self):
         return self.hz
 
@@ -49,22 +49,28 @@ class IMU:
     def set_omg_sigma(self, x_omg_sigma, y_omg_sigma, z_omg_sigma):
         self.omg_sigma = np.array([[x_omg_sigma, y_omg_sigma, z_omg_sigma]])
 
-    def set_pos_offset(self, x_pos_offset, y_pos_offset, z_pos_offset, time=None):
-        self.pos_offset = np.array([[x_pos_offset, y_pos_offset, z_pos_offset]])
+    def set_pos_offset(self, x_pos_offset, y_pos_offset, z_pos_offset,
+                       time=None):
+        self.pos_offset = np.array(
+            [[x_pos_offset, y_pos_offset, z_pos_offset]])
         if (time is not None):
             self.pos_offset_hist.append((time, self.pos_offset))
 
-    def set_ang_offset(self, x_ang_offset, y_ang_offset, z_ang_offset, time=None):
-        self.ang_offset = np.array([[x_ang_offset, y_ang_offset, z_ang_offset]])
+    def set_ang_offset(self, x_ang_offset, y_ang_offset, z_ang_offset,
+                       time=None):
+        self.ang_offset = np.array(
+            [[x_ang_offset, y_ang_offset, z_ang_offset]])
         if (time is not None):
             self.ang_offset_hist.append((time, self.ang_offset))
 
-    def set_acc_bias(self, x_acc_offset, y_acc_offset, z_acc_offset, time=None):
+    def set_acc_bias(self, x_acc_offset, y_acc_offset, z_acc_offset,
+                     time=None):
         self.acc_bias = np.array([[x_acc_offset, y_acc_offset, z_acc_offset]])
         if (time is not None):
             self.acc_bias_hist.append((time, self.acc_bias))
 
-    def set_omg_bias(self, x_omg_offset, y_omg_offset, z_omg_offset, time=None):
+    def set_omg_bias(self, x_omg_offset, y_omg_offset, z_omg_offset,
+                     time=None):
         self.omg_bias = np.array([[x_omg_offset, y_omg_offset, z_omg_offset]])
         if (time is not None):
             self.omg_bias_hist.append((time, self.omg_bias))
@@ -164,7 +170,8 @@ class IMU:
         omg = self.measure_omg(measurement_times)
         ids = np.ones(num_steps) * self.id
         r = np.repeat(
-            np.concatenate((self.acc_sigma * 100, self.acc_sigma * 100), axis=1),
+            np.concatenate(
+                (self.acc_sigma * 100, self.acc_sigma * 100), axis=1),
             num_steps,
             axis=0,
         )

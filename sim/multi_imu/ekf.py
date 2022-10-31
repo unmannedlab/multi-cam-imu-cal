@@ -4,7 +4,6 @@ import numpy as np
 from typing import List
 from scipy.spatial.transform import Rotation
 from scipy.linalg import inv
-from scipy import stats
 from collections import defaultdict
 
 from multi_imu.imu import IMU
@@ -94,8 +93,10 @@ class EKF:
         G = self.get_input_matrix()
         Q = self.get_process_noise_matrix()
         self.state = np.matmul(F, self.state)
-        self.cov = np.matmul(F, np.matmul(self.cov, F.transpose())) + np.matmul(
-            F, np.matmul(G, np.matmul(Q, np.matmul(G.transpose(), F.transpose())))
+        self.cov = np.matmul(F, np.matmul(self.cov, F.transpose())) + \
+            np.matmul(
+            F, np.matmul(G, np.matmul(
+                Q, np.matmul(G.transpose(), F.transpose())))
         )
         self.current_time = time
 
@@ -109,10 +110,10 @@ class EKF:
             return predicted_measurement
         else:
             n = int((12 * id) - 3)
-            pos_offset = self.state[n + 0 : n + 3]
-            ang_offset = self.state[n + 3 : n + 6]
-            acc_bias = self.state[n + 6 : n + 9]
-            omg_bias = self.state[n + 9 : n + 12]
+            pos_offset = self.state[n + 0: n + 3]
+            ang_offset = self.state[n + 3: n + 6]
+            acc_bias = self.state[n + 6: n + 9]
+            omg_bias = self.state[n + 9: n + 12]
 
             # Transform acceleration to IMU location
             imu_acc = (
@@ -138,8 +139,8 @@ class EKF:
             return H
         else:
             n = int((12 * id) - 3)
-            pos_offset = self.state[n + 0 : n + 3]
-            ang_offset = self.state[n + 3 : n + 6]
+            pos_offset = self.state[n + 0: n + 3]
+            ang_offset = self.state[n + 3: n + 6]
             ang_off_rot = Rotation.from_euler("xyz", ang_offset)
             body_acc = self.state[0:3]
             body_omg = self.state[3:6]
@@ -150,15 +151,24 @@ class EKF:
 
             # Body angular velocity
             temp = np.zeros([3, 3])
-            temp[0, 0] = pos_offset[1] * body_omg[1] + 1 * pos_offset[2] * body_omg[2]
-            temp[0, 1] = pos_offset[1] * body_omg[0] - 2 * pos_offset[0] * body_omg[1]
-            temp[0, 2] = pos_offset[2] * body_omg[0] - 2 * pos_offset[0] * body_omg[2]
-            temp[1, 0] = pos_offset[0] * body_omg[1] - 2 * pos_offset[1] * body_omg[0]
-            temp[1, 1] = pos_offset[0] * body_omg[0] + 1 * pos_offset[2] * body_omg[2]
-            temp[1, 2] = pos_offset[2] * body_omg[1] - 2 * pos_offset[1] * body_omg[2]
-            temp[2, 0] = pos_offset[0] * body_omg[2] - 2 * pos_offset[2] * body_omg[0]
-            temp[2, 1] = pos_offset[1] * body_omg[2] - 2 * pos_offset[2] * body_omg[1]
-            temp[2, 2] = pos_offset[0] * body_omg[0] + 1 * pos_offset[1] * body_omg[1]
+            temp[0, 0] = pos_offset[1] * body_omg[1] + \
+                1 * pos_offset[2] * body_omg[2]
+            temp[0, 1] = pos_offset[1] * body_omg[0] - \
+                2 * pos_offset[0] * body_omg[1]
+            temp[0, 2] = pos_offset[2] * body_omg[0] - \
+                2 * pos_offset[0] * body_omg[2]
+            temp[1, 0] = pos_offset[0] * body_omg[1] - \
+                2 * pos_offset[1] * body_omg[0]
+            temp[1, 1] = pos_offset[0] * body_omg[0] + \
+                1 * pos_offset[2] * body_omg[2]
+            temp[1, 2] = pos_offset[2] * body_omg[1] - \
+                2 * pos_offset[1] * body_omg[2]
+            temp[2, 0] = pos_offset[0] * body_omg[2] - \
+                2 * pos_offset[2] * body_omg[0]
+            temp[2, 1] = pos_offset[1] * body_omg[2] - \
+                2 * pos_offset[2] * body_omg[1]
+            temp[2, 2] = pos_offset[0] * body_omg[0] + \
+                1 * pos_offset[1] * body_omg[1]
             H[0:3, 3:6] = np.matmul(ang_off_rot.as_matrix(), temp)
 
             # Body Angular Acceleration
@@ -177,8 +187,9 @@ class EKF:
             temp[2, 0] = body_omg[0] * body_omg[2]
             temp[2, 1] = body_omg[1] * body_omg[2]
             temp[2, 2] = -body_omg[0] ** 2 - body_omg[1] ** 2
-            H[0:3, n + 0 : n + 3] = np.matmul(
-                ang_off_rot.as_matrix(), cross_product_matrix(body_omg_dot) + temp
+            H[0:3, n + 0: n + 3] = np.matmul(
+                ang_off_rot.as_matrix(),
+                cross_product_matrix(body_omg_dot) + temp
             )
 
             # IMU Angular Offset
@@ -187,23 +198,23 @@ class EKF:
                 + np.cross(body_omg_dot, pos_offset)
                 + np.cross(body_omg, np.cross(body_omg, pos_offset))
             )
-            H[0:3, n + 3 : n + 6] = np.matmul(
+            H[0:3, n + 3: n + 6] = np.matmul(
                 -ang_off_rot.as_matrix(), cross_product_matrix(imu_acc)
             )
 
             # IMU Accelerometer Bias
-            H[0:3, n + 6 : n + 9] = np.eye(3)
+            H[0:3, n + 6: n + 9] = np.eye(3)
 
             # IMU Body Angular Velocity
             H[3:6, 3:6] = ang_off_rot.as_matrix()
 
             # IMU Angular Offset
-            H[3:6, n + 3 : n + 6] = np.matmul(
+            H[3:6, n + 3: n + 6] = np.matmul(
                 -ang_off_rot.as_matrix(), cross_product_matrix(body_omg)
             )
 
             # IMU Gyroscope Bias
-            H[3:6, n + 9 : n + 12] = np.eye(3)
+            H[3:6, n + 9: n + 12] = np.eye(3)
 
             return H
 
@@ -216,13 +227,15 @@ class EKF:
         R = np.diag(r)
 
         residual = z - z_pred
-        residual_covariance = np.matmul(np.matmul(H, self.cov), H.transpose()) + R
+        residual_covariance = np.matmul(
+            np.matmul(H, self.cov), H.transpose()) + R
         K = np.matmul(
             self.cov,
             np.matmul(H.transpose(), inv(residual_covariance)),
         )
         self.state += np.matmul(K, residual)
-        self.cov = np.matmul((np.eye(self.state_size) - np.matmul(K, H)), self.cov)
+        self.cov = np.matmul(
+            (np.eye(self.state_size) - np.matmul(K, H)), self.cov)
         self._store_state(id, residual)
 
     def get_body_state(self):
@@ -233,15 +246,15 @@ class EKF:
         return time, acc, omg, omg_dot
 
     def init_state_history(self, time_length):
-        self.time_hist        = np.zeros([time_length])
-        self.state_hist       = np.zeros([self.state_size, time_length])
-        self.cov_hist         = np.zeros([self.state_size, time_length])
-        self.residual_hist    = defaultdict(list)
-        self.shift_test_hist  = defaultdict(list)
+        self.time_hist = np.zeros([time_length])
+        self.state_hist = np.zeros([self.state_size, time_length])
+        self.cov_hist = np.zeros([self.state_size, time_length])
+        self.residual_hist = defaultdict(list)
+        self.shift_test_hist = defaultdict(list)
         self.settle_test_hist = defaultdict(list)
-        self.imu_cov_hist     = defaultdict(list)
-        self.settled_hist     = defaultdict(list)
-        self.re_init_hist     = defaultdict(list)
+        self.imu_cov_hist = defaultdict(list)
+        self.settled_hist = defaultdict(list)
+        self.re_init_hist = defaultdict(list)
 
     def _store_state(self, imu_id, residual):
         self.time_hist[self.history_index] = self.current_time
@@ -250,15 +263,27 @@ class EKF:
 
         n = int((12 * imu_id) - 3)
         imu_cov = np.diagonal(self.cov)[n:n+12]
-        if ((imu_id != 0) and self.residual_count[imu_id] > (self.dof1 + self.dof2)):
-            sample_mean = np.mean([x[1] for x in self.residual_hist[imu_id][-self.dof2:-1]], axis=0)
-            shift_mean  = np.mean([x[1] for x in self.residual_hist[imu_id][-(self.dof1 + self.dof2):-self.dof2]], axis=0)
-            shift_std   = np.std( [x[1] for x in self.residual_hist[imu_id][-(self.dof1 + self.dof2):-self.dof2]], axis=0)
-            self.shift_test_hist[imu_id].append((self.current_time,  (sample_mean - shift_mean) / shift_std))
-            self.settle_test_hist[imu_id].append((self.current_time, (self.imu_cov_hist[imu_id][0][1] - imu_cov) / self.imu_cov_hist[imu_id][0][1]))
+        if ((imu_id != 0) and self.residual_count[imu_id] >
+                (self.dof1 + self.dof2)):
+            sample_mean = np.mean(
+                [x[1] for x in
+                    self.residual_hist[imu_id][-self.dof2:-1]], axis=0)
+            shift_mean = np.mean(
+                [x[1] for x in
+                 self.residual_hist[imu_id][-(self.dof1 +
+                                              self.dof2):-self.dof2]], axis=0)
+            shift_std = np.std([x[1] for x in self.residual_hist[imu_id]
+                               [-(self.dof1 + self.dof2):-self.dof2]], axis=0)
+            self.shift_test_hist[imu_id].append(
+                (self.current_time,  (sample_mean - shift_mean) / shift_std))
+            self.settle_test_hist[imu_id].append(
+                (self.current_time,
+                 (self.imu_cov_hist[imu_id][0][1] - imu_cov) /
+                 self.imu_cov_hist[imu_id][0][1]))
 
             # Set bits
-            self.settled[imu_id] = (self.settled[imu_id] or all(self.settle_test_hist[imu_id][-1][1] > 0.98))
+            self.settled[imu_id] = (self.settled[imu_id] or all(
+                self.settle_test_hist[imu_id][-1][1] > 0.98))
             self.re_init[imu_id] = any(self.shift_test_hist[imu_id][-1][1] > 2)
 
         # Increment
@@ -266,42 +291,38 @@ class EKF:
 
         self.residual_hist[imu_id].append((self.current_time, residual))
         self.imu_cov_hist[imu_id].append((self.current_time, imu_cov))
-        self.settled_hist[imu_id].append((self.current_time, self.settled[imu_id]))
-        self.re_init_hist[imu_id].append((self.current_time, self.re_init[imu_id]))
+        self.settled_hist[imu_id].append(
+            (self.current_time, self.settled[imu_id]))
+        self.re_init_hist[imu_id].append(
+            (self.current_time, self.re_init[imu_id]))
         self.history_index += 1
         if (self.re_init[imu_id]):
             self.reinitialize_covariance(imu_id)
 
-
     def reinitialize_covariance(self, imu_id):
         n = int((12 * imu_id) - 3)
-        # scaling_matrix = np.eye(self.state_size)
-        # scaling_matrix[n:n+12,n:n+12] = np.eye(12)
-        # self.cov = np.matmul(self.cov, scaling_matrix)
-        # self.cov[0:9,0:9] = self.cov[0:9,0:9] + np.eye(9) * 1
-        # self.cov[n:n+12,n:n+12] = self.cov[n:n+12,n:n+12] + np.eye(12) * 1
-        self.cov[n:n+12,n:n+12] = np.eye(12) * 10
-        # self.cov = np.eye(self.state_size)
+        scaling_matrix = np.eye(self.state_size)
+        scaling_matrix[n:n+12, n:n+12] = np.eye(12)
+        self.cov = np.matmul(self.cov, scaling_matrix)
+        self.cov[0:9, 0:9] = self.cov[0:9, 0:9] + np.eye(9) * 1
+        self.cov[n:n+12, n:n+12] = self.cov[n:n+12, n:n+12] + np.eye(12) * 1
+        self.cov[n:n+12, n:n+12] = np.eye(12) * 10
+        self.cov = np.eye(self.state_size)
         self.re_init[imu_id] = False
         self.settled[imu_id] = False
         self.residual_count[imu_id] = 0
 
-
     def get_state_history(self):
         return self.time_hist, self.state_hist
-
 
     def get_covariance_history(self):
         return self.time_hist, self.cov_hist
 
-
     def get_residual_history(self):
         return self.residual_hist
 
-
     def get_test_history(self):
         return self.shift_test_hist, self.settle_test_hist
-
 
     def get_flag_history(self):
         return self.settled_hist, self.re_init_hist

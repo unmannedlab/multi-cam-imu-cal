@@ -6,32 +6,33 @@ import numpy as np
 from typing import List
 
 from multi_imu.ekf import EKF
-from multi_imu.cf  import CF
-from multi_imu.truth import TruthModel
+from multi_imu.cf import CF
 
 
 def vec_norm_rms(mat, vec):
-    del_x = mat[0,:] - vec[0]
-    del_y = mat[1,:] - vec[1]
-    del_z = mat[2,:] - vec[2]
+    del_x = mat[0, :] - vec[0]
+    del_y = mat[1, :] - vec[1]
+    del_z = mat[2, :] - vec[2]
     err = np.sqrt(np.square(del_x) + np.square(del_y) + np.square(del_z))
     rms = np.sum(np.square(err)) / len(err)
     return rms
 
 
 def mat_norm_rms(mat1, mat2):
-    del_x = mat1[0,:] - mat2[0,:]
-    del_y = mat1[1,:] - mat2[1,:]
-    del_z = mat1[2,:] - mat2[2,:]
+    del_x = mat1[0, :] - mat2[0, :]
+    del_y = mat1[1, :] - mat2[1, :]
+    del_z = mat1[2, :] - mat2[2, :]
     err = np.sqrt(np.square(del_x) + np.square(del_y) + np.square(del_z))
     rms = np.sum(np.square(err)) / len(err)
     return rms
 
 
 def evaluate_ekfs(ekfs: List[EKF], cfs: List[CF], name=None):
-
+    dir_path = os.path.join('output', 'stats')
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
     file_name = datetime.datetime.now().strftime("%Y_%m_%d-%H_%M_%S.txt")
-    file_path = os.path.abspath(os.path.join('output','stats', file_name))
+    file_path = os.path.abspath(os.path.join(dir_path, file_name))
     with open(file_path, "w") as f:
         if (name is not None):
             f.write("Simulation: {}\n".format(name))
@@ -57,7 +58,8 @@ def evaluate_ekfs(ekfs: List[EKF], cfs: List[CF], name=None):
                 f.write("{},{},{},".format(acc_sig[0], acc_sig[1], acc_sig[2]))
                 f.write("{},{},{},".format(omg_sig[0], omg_sig[1], omg_sig[2]))
                 f.write("{},{},{},".format(pos_off[0], pos_off[1], pos_off[2]))
-                f.write("{},{},{}\n".format(ang_off[0], ang_off[1], ang_off[2]))
+                f.write("{},{},{}\n".format(
+                    ang_off[0], ang_off[1], ang_off[2]))
         f.write("\n")
 
         # Summarize EKF errors
@@ -70,11 +72,13 @@ def evaluate_ekfs(ekfs: List[EKF], cfs: List[CF], name=None):
             omg_body = truth_model.get_omg(time)
 
             # Body Acceleration
-            acc_rms = mat_norm_rms(ekf_state[0:3, -101:-1], np.transpose(acc_body[-101:-1, 0:3]))
+            acc_rms = mat_norm_rms(
+                ekf_state[0:3, -101:-1], np.transpose(acc_body[-101:-1, 0:3]))
             f.write(",{:1.6E}".format(acc_rms))
 
             # Body Angular Velocity
-            omg_rms = mat_norm_rms(ekf_state[3:6, -101:-1], np.transpose(omg_body[-101:-1, 0:3]))
+            omg_rms = mat_norm_rms(
+                ekf_state[3:6, -101:-1], np.transpose(omg_body[-101:-1, 0:3]))
             f.write(",{:1.6E}".format(omg_rms))
 
             for imu in ekf.get_sensors()[1:]:
@@ -83,22 +87,26 @@ def evaluate_ekfs(ekfs: List[EKF], cfs: List[CF], name=None):
 
                 # Position Offset
                 pos_offset = imu.get_pos_offset()[0]
-                imu_pos_rms = vec_norm_rms(ekf_state[n+0:n+3, -101:-1], pos_offset)
+                imu_pos_rms = vec_norm_rms(
+                    ekf_state[n+0:n+3, -101:-1], pos_offset)
                 f.write(",{:1.6E}".format(imu_pos_rms))
 
                 # Angular Offset
                 ang_offset = imu.get_ang_offset()[0]
-                imu_ang_rms = vec_norm_rms(ekf_state[n+3:n+6, -101:-1], ang_offset)
+                imu_ang_rms = vec_norm_rms(
+                    ekf_state[n+3:n+6, -101:-1], ang_offset)
                 f.write(",{:1.6E}".format(imu_ang_rms))
 
                 # Accelerometer Bias
                 acc_bias = imu.get_acc_bias()[0]
-                imu_acc_bias_rms = vec_norm_rms(ekf_state[n+6:n+9, -101:-1], acc_bias)
+                imu_acc_bias_rms = vec_norm_rms(
+                    ekf_state[n+6:n+9, -101:-1], acc_bias)
                 f.write(",{:1.6E}".format(imu_acc_bias_rms))
 
                 # Gyroscope Bias
                 omg_bias = imu.get_omg_bias()[0]
-                imu_omg_bias_rms = vec_norm_rms(ekf_state[n+9:n+12, -101:-1], omg_bias)
+                imu_omg_bias_rms = vec_norm_rms(
+                    ekf_state[n+9:n+12, -101:-1], omg_bias)
                 f.write(",{:1.6E}".format(imu_omg_bias_rms))
 
         # Summarize CF errors
@@ -111,9 +119,11 @@ def evaluate_ekfs(ekfs: List[EKF], cfs: List[CF], name=None):
             omg_body = truth_model.get_omg(time)
 
             # Body Acceleration
-            acc_rms = mat_norm_rms(np.transpose(acc[-101:-1, 0:3]), np.transpose(acc_body[-101:-1, 0:3]))
+            acc_rms = mat_norm_rms(np.transpose(
+                acc[-101:-1, 0:3]), np.transpose(acc_body[-101:-1, 0:3]))
             f.write(",{:1.6E}".format(acc_rms))
 
             # Body Angular Velocity
-            omg_rms = mat_norm_rms(np.transpose(omg[-101:-1, 0:3]), np.transpose(omg_body[-101:-1, 0:3]))
+            omg_rms = mat_norm_rms(np.transpose(
+                omg[-101:-1, 0:3]), np.transpose(omg_body[-101:-1, 0:3]))
             f.write(",{:1.6E}\n".format(omg_rms))
